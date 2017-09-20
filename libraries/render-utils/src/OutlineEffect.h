@@ -97,10 +97,12 @@ public:
     using Config = DrawOutlineConfig;
     using JobModel = render::Job::ModelI<DrawOutline, Inputs, Config>;
 
-    DrawOutline();
+    bool grab = false;
 
-    void configure(const Config& config);
-    void run(const render::RenderContextPointer& renderContext, const Inputs& inputs);
+    DrawOutline(bool isGrab);
+
+    void configure(const Config& config, bool isGrab = false);
+    void run(const render::RenderContextPointer& renderContext, const Inputs& inputs, bool isGrab = false);
 
 private:
 
@@ -171,10 +173,16 @@ public:
     using Config = render::Task::Config;
     using JobModel = render::Task::ModelI<DrawOutlineTask, Inputs, Config>;
 
-    DrawOutlineTask();
+    bool grab = false;
 
-    void configure(const Config& config);
-    void build(JobModel& task, const render::Varying& inputs, render::Varying& outputs);
+    DrawOutlineTask();
+    DrawOutlineTask(bool isGrab) {
+        grab = isGrab;
+    };
+
+    void configure(const Config& config, bool isGrab = false);
+    //void build(JobModel& task, const render::Varying& inputs, render::Varying& outputs);
+    void build(JobModel& task, const render::Varying& inputs, render::Varying& outputs, bool isGrab = false);
 
 };
 

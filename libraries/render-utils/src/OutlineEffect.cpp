@@ -121,8 +121,7 @@ void DrawOutlineDepth::run(const render::RenderContextPointer& renderContext, co
             for (auto items : inShapes) {
                 if (items.first.isSkinned()) {
                     skinnedShapeKeys.push_back(items.first);
-                }
-                else {
+                } else {
                     renderItems(renderContext, items.second);
                 }
             }
@@ -144,11 +143,21 @@ void DrawOutlineDepth::run(const render::RenderContextPointer& renderContext, co
     }
 }
 
-DrawOutline::DrawOutline() {
+DrawOutline::DrawOutline(bool isgrab) {
+    grab = isgrab;
 }
 
-void DrawOutline::configure(const Config& config) {
-    _color = config.color;
+void DrawOutline::configure(const Config& config, bool isgrab) {
+    if (grab == false) {
+        qDebug("inside drawoutline::configure and grab is false");
+        this->_color = { 1.0f,0.0f,0.0f };
+    } else if (grab == true) {
+        qDebug("inside drawoutline::configure and grab is trutrutru");
+        this->_color = { 0.0f,1.0f,0.0f };
+    } else {
+        qDebug("i don't know what is happening...grab is neither true nor false...help!!!");
+        this->_color = { 0.0f,0.0f,1.0f };
+    }
     _blurKernelSize = std::min(10, std::max(2, (int)floorf(config.width*2 + 0.5f)));
     // Size is in normalized screen height. We decide that for outline width = 1, this is equal to 1/400.
     _size = config.width / 400.f;
@@ -158,7 +167,7 @@ void DrawOutline::configure(const Config& config) {
     _intensity = config.intensity * (config.glow ? 2.f : 1.f);
 }
 
-void DrawOutline::run(const render::RenderContextPointer& renderContext, const Inputs& inputs) {
+void DrawOutline::run(const render::RenderContextPointer& renderContext, const Inputs& inputs, bool isgrab) {
     auto outlineFrameBuffer = inputs.get1();
 
     if (outlineFrameBuffer) {
@@ -326,14 +335,15 @@ const gpu::PipelinePointer& DebugOutline::getDebugPipeline() {
 }
 
 DrawOutlineTask::DrawOutlineTask() {
-
 }
 
-void DrawOutlineTask::configure(const Config& config) {
-
+void DrawOutlineTask::configure(const Config& config, bool isgrab) {
+    grab = isgrab;
 }
 
-void DrawOutlineTask::build(JobModel& task, const render::Varying& inputs, render::Varying& outputs) {
+
+void DrawOutlineTask::build(JobModel& task, const render::Varying& inputs, render::Varying& outputs, bool isgrab) {
+    grab = isgrab;
     const auto input = inputs.get<Inputs>();
     const auto selectedMetas = inputs.getN<Inputs>(0);
     const auto shapePlumber = input.get1();
@@ -364,7 +374,13 @@ void DrawOutlineTask::build(JobModel& task, const render::Varying& inputs, rende
 
     // Draw outline
     const auto drawOutlineInputs = DrawOutline::Inputs(deferredFrameTransform, outlinedFrameBuffer, sceneFrameBuffer, primaryFramebuffer).asVarying();
-    task.addJob<DrawOutline>("OutlineEffect", drawOutlineInputs);
+    if (this->grab == true) {
+        qDebug("grab is TRUE inside drawoutlinetask");
+    } else {
+        qDebug("grab is not true inside this drawoutlinetask");
+    }
+    task.addJob<DrawOutline>("OutlineEffect", drawOutlineInputs, this->grab);
+    
 
     // Debug outline
     task.addJob<DebugOutline>("OutlineDebug", outlinedFrameBuffer);

@@ -31,6 +31,7 @@ ContextOverlayInterface::ContextOverlayInterface() {
     _selectionScriptingInterface = DependencyManager::get<SelectionScriptingInterface>();
 
     _selectionToSceneHandler.initialize("contextOverlayHighlightList");
+    _selectionToSceneHandler.initialize("grabHighlightList");
 
     _entityPropertyFlags += PROP_POSITION;
     _entityPropertyFlags += PROP_ROTATION;
@@ -267,10 +268,12 @@ void ContextOverlayInterface::openMarketplace() {
 
 void ContextOverlayInterface::enableEntityHighlight(const EntityItemID& entityItemID) {
     _selectionScriptingInterface->addToSelectedItemsList("contextOverlayHighlightList", "entity", entityItemID);
+    _selectionScriptingInterface->addToSelectedItemsList("grabHighlightList", "entity", entityItemID);
 }
 
 void ContextOverlayInterface::disableEntityHighlight(const EntityItemID& entityItemID) {
     _selectionScriptingInterface->removeFromSelectedItemsList("contextOverlayHighlightList", "entity", entityItemID);
+    _selectionScriptingInterface->removeFromSelectedItemsList("grabHighlightList", "entity", entityItemID);
 }
 
 void ContextOverlayInterface::deletingEntity(const EntityItemID& entityID) {
