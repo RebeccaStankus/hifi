@@ -76,7 +76,8 @@ Rectangle {
             height: 30
             anchors.left: parent.left
             anchors.leftMargin: 9
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 9
             source: root.emoteIconSource
             mipmap: true
             visible: false
