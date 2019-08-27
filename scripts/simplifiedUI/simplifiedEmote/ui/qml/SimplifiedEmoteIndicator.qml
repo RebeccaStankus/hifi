@@ -74,7 +74,8 @@ Rectangle {
             id: emoteIndicator
             width: 30
             height: 30
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: 9
             anchors.verticalCenter: parent.verticalCenter
             source: root.emoteIconSource
             mipmap: true
