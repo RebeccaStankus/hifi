@@ -29,8 +29,6 @@ class QmlWindowProxy : public QmlWrapper {
 public:
     QmlWindowProxy(QObject* qmlObject, QObject* parent = nullptr);
 
-    Q_INVOKABLE void parentNativeWindowToMainWindow();
-
     QObject* getQmlWindow() const { return _qmlWindow; }
 private:
     QObject* _qmlWindow;
@@ -145,8 +143,6 @@ private:
 
     Q_INVOKABLE void setPresentationMode(int presentationMode);
     Q_INVOKABLE int getPresentationMode() const;
-
-    Q_INVOKABLE void parentNativeWindowToMainWindow();
 
 public slots:
 

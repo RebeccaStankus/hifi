@@ -55,20 +55,6 @@ QmlWindowProxy::QmlWindowProxy(QObject* qmlObject, QObject* parent) : QmlWrapper
     _qmlWindow = qmlObject;
 }
 
-void QmlWindowProxy::parentNativeWindowToMainWindow() {
-#ifdef Q_OS_WIN
-    if (!_qmlWindow) {
-        return;
-    }
-    const auto nativeWindowProperty = _qmlWindow->property("nativeWindow");
-    if (nativeWindowProperty.isNull() || !nativeWindowProperty.isValid()) {
-        return;
-    }
-    const auto nativeWindow = qvariant_cast<QQuickWindow*>(nativeWindowProperty);
-    SetWindowLongPtr((HWND)nativeWindow->winId(), GWLP_HWNDPARENT, (LONG)MainWindow::findMainWindow()->winId());
-#endif
-}
-
 void InteractiveWindowProxy::emitScriptEvent(const QVariant& scriptMessage){
     emit scriptEventReceived(scriptMessage);
 }
@@ -273,12 +259,6 @@ InteractiveWindow::InteractiveWindow(const QString& sourceUrl, const QVariantMap
             connect(object, SIGNAL(windowClosed()), this, SIGNAL(closed()), Qt::QueuedConnection);
             connect(object, SIGNAL(selfDestruct()), this, SLOT(close()), Qt::QueuedConnection);
 
-#ifdef Q_OS_WIN
-            connect(object, SIGNAL(nativeWindowChanged()), this, SLOT(parentNativeWindowToMainWindow()), Qt::QueuedConnection);
-            connect(object, SIGNAL(interactiveWindowVisibleChanged()), this, SLOT(parentNativeWindowToMainWindow()), Qt::QueuedConnection);
-            connect(object, SIGNAL(presentationModeChanged()), this, SLOT(parentNativeWindowToMainWindow()), Qt::QueuedConnection);
-#endif
-
             QUrl sourceURL{ sourceUrl };
             // If the passed URL doesn't correspond to a known scheme, assume it's a local file path
             if (!KNOWN_SCHEMES.contains(sourceURL.scheme(), Qt::CaseInsensitive)) {
@@ -396,7 +376,7 @@ void InteractiveWindow::setPosition(const glm::vec2& position) {
     if (_qmlWindowProxy) {
         QMetaObject::invokeMethod(_qmlWindowProxy.get(), "writeProperty", Q_ARG(QString, INTERACTIVE_WINDOW_POSITION_PROPERTY),
                                   Q_ARG(QVariant, QPointF(position.x, position.y)));
-        QMetaObject::invokeMethod(_qmlWindowProxy->getQmlWindow(), "updateInteractiveWindowPositionForMode");
+        QMetaObject::invokeMethod(_qmlWindowProxy->getQmlWindow(), "updateInteractiveWindowPosition");
     }
 }
 
@@ -412,7 +392,7 @@ void InteractiveWindow::setSize(const glm::vec2& size) {
     if (_qmlWindowProxy) {
         QMetaObject::invokeMethod(_qmlWindowProxy.get(), "writeProperty", Q_ARG(QString, INTERACTIVE_WINDOW_SIZE_PROPERTY),
                                   Q_ARG(QVariant, QSize(size.x, size.y)));
-        QMetaObject::invokeMethod(_qmlWindowProxy->getQmlWindow(), "updateInteractiveWindowSizeForMode");
+        QMetaObject::invokeMethod(_qmlWindowProxy->getQmlWindow(), "updateInteractiveWindowSize");
     }
 }
 
@@ -437,12 +417,6 @@ int InteractiveWindow::getPresentationMode() const {
     }
 
     return _qmlWindowProxy->readProperty(PRESENTATION_MODE_PROPERTY).toInt();
-}
-
-void InteractiveWindow::parentNativeWindowToMainWindow() {
-    if (_qmlWindowProxy) {
-        QMetaObject::invokeMethod(_qmlWindowProxy.get(), "parentNativeWindowToMainWindow");
-    }
 }
 
 void InteractiveWindow::setPresentationMode(int presentationMode) {
